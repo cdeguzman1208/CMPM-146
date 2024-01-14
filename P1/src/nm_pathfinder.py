@@ -18,7 +18,7 @@ def find_path(source_point, destination_point, mesh):
     path = []
     # mapping of boxes to (backpointer to previous box), used to find the path
     boxes = {}
-    
+
     # p is the current from the src
     src_box = find_box(source_point, mesh)
     dst_box = find_box(destination_point, mesh)
