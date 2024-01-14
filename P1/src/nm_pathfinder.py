@@ -1,7 +1,9 @@
-from math import inf, sqrt, pow
-from heapq import heappop, heappush
+# imports
+from heapq import heappop, heappush     # heap queue functions: pop, push
+from math import inf, pow, sqrt         # math functions: infinity, power, square root
 
-def find_path(source_point, destination_point, mesh):
+# find_path()
+def find_path(source_point, destination_point, mesh):   # function definition
     """
     Searches for a path from source_point to destination_point through the mesh
 
@@ -23,118 +25,120 @@ def find_path(source_point, destination_point, mesh):
     src_box = find_box(source_point, mesh)
     dst_box = find_box(destination_point, mesh)
 
-    p_box = src_box
-    if (src_box is None or dst_box is None):
+    # scan through the list of boxes to find which tontains the source point
+    priority_box = source_box
+    if (source_box is None or destination_box is None):
         print("No path!")
         path.append(source_point)
         path.append(destination_point)
 
-        if (src_box is not None):
-            boxes[src_box] = True
-        if (dst_box is not None):
-            boxes[dst_box] = True
-        return path, boxes.keys()
-
+        if (source_box is not None):
+            boxes[source_box] = True
+        if (destination_box is not None):
+            boxes[destination_box] = True
+        return path, boxes.keys()   # instead of returning a list indicating  that you haven't visited any boxes
+    
+    # do this as well for the destination point
     if (source_point == destination_point):
         path.append(source_point)
         path.append(destination_point)
-        boxes[src_box] = True
-        boxes[dst_box] = True
-        return path, boxes.keys()
+        boxes[source_box] = True
+        boxes[destination_box] = True
+        return path, boxes.keys()   # return a list of these two boxes
 
-    boxes[src_box] = True
-    p_src = source_point
+    boxes[source_box] = True
+    priority_source = source_point
     entrypoint = None
     frontier = []  # takes in a (priority, {stuff})
 
     # stuff has:
     # current box
-    # destination type (src or dst) to distinguish forward or back
-    heappush(frontier, (-1, src_box, destination_point))
-    heappush(frontier, (-1, dst_box, source_point))
+    # destination type (source or destination) to distinguish forward or back
+    heappush(frontier, (-1, source_box, destination_point))
+    heappush(frontier, (-1, destination_box, source_point))
 
     # detail points
-    forward_points = {src_box : source_point}
-    backward_points = {dst_box : destination_point}
+    forward_points = {source_box : source_point}
+    backward_points = {destination_box : destination_point}
 
     # used to track edge costs
-    forward_cost = {src_box: 0}
-    backward_cost = {dst_box: 0}
+    forward_cost = {source_box: 0}
+    backward_cost = {destination_box: 0}
 
     # track backpointers
-    forward_prev = {src_box : None}
-    backward_prev = {dst_box : None}
+    forward_prev = {source_box : None}
+    backward_prev = {destination_box : None}
 
     pathFound = False
     while (frontier):
-        p_priority, p_box, curr_goal = heappop(frontier)
-        boxes[p_box] = True
+        priority_priority, priority_box, curr_goal = heappop(frontier)
+        boxes[priority_box] = True
 
         # Check if goal box has been explored by other search direction
-        if ((curr_goal == destination_point and p_box in backward_prev)
-            or (curr_goal == source_point and p_box in forward_prev)):
+        if ((curr_goal == destination_point and priority_box in backward_prev)
+            or (curr_goal == source_point and priority_box in forward_prev)):
             pathFound = True
             break
 
-        points, prev, cost_so_far, goal_box = (forward_points, forward_prev, forward_cost, dst_box) \
+        points, prev, cost_so_far, goal_box = (forward_points, forward_prev, forward_cost, destination_box) \
                                                 if (curr_goal == destination_point) else \
-                                                (backward_points, backward_prev, backward_cost, src_box)
-        p_src = points[p_box]
+                                                (backward_points, backward_prev, backward_cost, source_box)
+        priority_source = points[priority_box]
 
-        for neighbor in mesh["adj"][p_box]:
-            entrypoint = find_next_point(p_src, p_box, neighbor)
-            link_cost = euclidean(p_src, entrypoint)
-            new_cost = cost_so_far[p_box] + link_cost
+        for neighbor in mesh["adj"][priority_box]:
+            entrypoint = find_next_point(priority_source, priority_box, neighbor)
+            link_cost = euclidean(priority_source, entrypoint)
+            new_cost = cost_so_far[priority_box] + link_cost
 
             # if (neighbor == goal_box):
             #     new_cost += euclidean(entrypoint, curr_goal)
 
             if (neighbor not in prev or new_cost < cost_so_far[neighbor]):
                 cost_so_far[neighbor] = new_cost
-                prev[neighbor] = p_box
+                prev[neighbor] = priority_box
                 points[neighbor] = entrypoint
 
                 # We must handle when we arrive at the destination box
                 # This is because the cost from the entry to the goal point matters.
                 # But there is the argument
                 # if (neighbor != goal_box):
-                #     p_priority = new_cost + euclidean(entrypoint, curr_goal)
+                #     priority_priority = new_cost + euclidean(entrypoint, curr_goal)
                 # else:
-                #     p_priority = new_cost
+                #     priority_priority = new_cost
 
-                p_priority = new_cost + euclidean(entrypoint, curr_goal)
-                heappush(frontier, (p_priority, neighbor, curr_goal))
+                priority_priority = new_cost + euclidean(entrypoint, curr_goal)
+                heappush(frontier, (priority_priority, neighbor, curr_goal))
 
     if (pathFound):
         # print("Found Path")
-        # assert(forward_points[src_box] == source_point)
-        # assert(backward_points[dst_box] == destination_point)
+        # assert(forward_points[source_box] == source_point)
+        # assert(backward_points[destination_box] == destination_point)
         # assert(len(path) == len(set(path)))
-        f_path = construct_path(p_box, src_box, forward_prev, forward_points)
-        b_path = construct_path(p_box, dst_box, backward_prev, backward_points, None, False)
+        forward_path = construct_path(priority_box, source_box, forward_prev, forward_points)
+        backward_path = construct_path(priority_box, destination_box, backward_prev, backward_points, None, False)
 
         # handle any cases where we have duplicate when stitching paths together
-        if (len(f_path) > 0 and len(b_path) > 0):
-            if (f_path[-1] == b_path[0]):
-                f_path = f_path[:-1]
+        if (len(forward_path) > 0 and len(backward_path) > 0):
+            if (forward_path[-1] == backward_path[0]):
+                forward_path = forward_path[:-1]
 
-        path = f_path + b_path
-        print(b_path)
+        path = forward_path + backward_path
+        print(backward_path)
 
     else:
         path.append(source_point)
         path.append(destination_point)
-        boxes[src_box] = True
-        boxes[dst_box] = True
+        boxes[source_box] = True
+        boxes[destination_box] = True
         print("No path!")
 
     return path, boxes.keys()
 
-def path_len(path):
+def path_length(path):
     ret = 0
-    pathlen = len(path)
-    if (pathlen > 2):
-        for i in range(1, pathlen):
+    pathlength = len(path)
+    if (pathlength > 2):
+        for i in range(1, pathlength):
             ret += euclidean(path[i - 1], path[i])
     return ret
 
@@ -191,26 +195,26 @@ def euclidean(p1=(0, 0), p2=(0, 0)):
 
 # p is the current point
 
-def find_next_point(n, srcbox, dstbox):
+def find_next_point(n, sourcebox, destinationbox):
     ret_x = n[0]
     ret_y = n[1]
 
     # check if left and right meet
-    if (srcbox[0] == dstbox[1] or srcbox[1] == dstbox[0]):
-        ret_x = srcbox[0] if (srcbox[0] == dstbox[1]) else srcbox[1]
+    if (sourcebox[0] == destinationbox[1] or sourcebox[1] == destinationbox[0]):
+        ret_x = sourcebox[0] if (sourcebox[0] == destinationbox[1]) else sourcebox[1]
 
         # y range (max of the top, the min of the bottom)
-        top = max(srcbox[2], dstbox[2])  # b1y1 , b2y1
-        bottom = min(srcbox[3], dstbox[3])  # b1y2 , b2y2
+        top = max(sourcebox[2], destinationbox[2])  # b1y1 , b2y1
+        bottom = min(sourcebox[3], destinationbox[3])  # b1y2 , b2y2
         ret_y = top if (n[1] <= top) else bottom if (bottom <= n[1]) else n[1]
 
     # check if top and down meet
-    if (srcbox[2] == dstbox[3] or srcbox[3] == dstbox[2]):
-        ret_y = srcbox[2] if (srcbox[2] == dstbox[3]) else srcbox[3]
+    if (sourcebox[2] == destinationbox[3] or sourcebox[3] == destinationbox[2]):
+        ret_y = sourcebox[2] if (sourcebox[2] == destinationbox[3]) else sourcebox[3]
 
         # x range (Max of the left, the min of the right)
-        left = max(srcbox[0], dstbox[0])  # b1x1 , b2x1
-        right = min(srcbox[1], dstbox[1])  # b1x2 , b2x2
+        left = max(sourcebox[0], destinationbox[0])  # b1x1 , b2x1
+        right = min(sourcebox[1], destinationbox[1])  # b1x2 , b2x2
         ret_x = left if (n[0] <= left) else right if (right <= n[0]) else n[0]
 
     return (ret_x, ret_y)
@@ -232,87 +236,87 @@ def astar_find_path(source_point, destination_point, mesh):
     path = []
     # mapping of boxes to (backpointer to previous box), used to find the path
     boxes = {}
-    # p is the current from the src
+    # p is the current from the source
     # q will be the current from the
-    src_box = find_box(source_point, mesh)
-    dst_box = find_box(destination_point, mesh)
+    source_box = find_box(source_point, mesh)
+    destination_box = find_box(destination_point, mesh)
 
-    p_box = src_box
-    q_box = dst_box
+    priority_box = source_box
+    q_box = destination_box
 
-    if (src_box is None or dst_box is None):
+    if (source_box is None or destination_box is None):
         print("No path!")
         path.append(source_point)
         path.append(destination_point)
-        if (src_box is not None):
-            boxes[src_box] = True
-        if (dst_box is not None):
-            boxes[dst_box] = True
+        if (source_box is not None):
+            boxes[source_box] = True
+        if (destination_box is not None):
+            boxes[destination_box] = True
         return path, boxes.keys()
 
-    boxes[src_box] = True
-    p_src = source_point
+    boxes[source_box] = True
+    priority_source = source_point
     entrypoint = None
     frontier = []  # takes in a (priority, {stuff})
 
     # stuff has:
     # current box
 
-    heappush(frontier, (0, p_box))
-    forward_points = {src_box : source_point}
+    heappush(frontier, (0, priority_box))
+    forward_points = {source_box : source_point}
 
     # used to track edge costs
-    forward_cost = {src_box: 0}
+    forward_cost = {source_box: 0}
 
     # track backpointers
     forward_prev = {}
     backward_prev = {}
 
-    forward_prev[p_box] = None
+    forward_prev[priority_box] = None
     backward_prev[q_box] = None
 
     pathFound = False
     while (frontier):
-        p_priority, p_box = heappop(frontier)
-        boxes[p_box] = True
+        priority_priority, priority_box = heappop(frontier)
+        boxes[priority_box] = True
 
-        if (p_box == dst_box):
+        if (priority_box == destination_box):
             pathFound = True
             break
 
-        p_src = forward_points[p_box]
-        for neighbor in mesh["adj"][p_box]:
+        priority_source = forward_points[priority_box]
+        for neighbor in mesh["adj"][priority_box]:
 
-            entrypoint = find_next_point(p_src, p_box, neighbor)
-            link_cost = euclidean(p_src, entrypoint)
-            new_cost = forward_cost[p_box] + link_cost
+            entrypoint = find_next_point(priority_source, priority_box, neighbor)
+            link_cost = euclidean(priority_source, entrypoint)
+            new_cost = forward_cost[priority_box] + link_cost
 
-            # if (neighbor == dst_box):
+            # if (neighbor == destination_box):
             #     new_cost += euclidean(entrypoint, destination_point)
 
             if (neighbor not in forward_prev or new_cost < forward_cost[neighbor]):
                 forward_cost[neighbor] = new_cost
-                forward_prev[neighbor] = p_box
+                forward_prev[neighbor] = priority_box
                 forward_points[neighbor] = entrypoint
 
-                # if (neighbor != dst_box):
-                #     p_priority = new_cost + euclidean(entrypoint, destination_point)
+                # if (neighbor != destination_box):
+                #     priority_priority = new_cost + euclidean(entrypoint, destination_point)
                 # else:
-                #     p_priority = new_cost
+                #     priority_priority = new_cost
 
-                p_priority = new_cost + euclidean(entrypoint, destination_point)
+                priority_priority = new_cost + euclidean(entrypoint, destination_point)
 
-                heappush(frontier, (p_priority, neighbor))
+                heappush(frontier, (priority_priority, neighbor))
 
     if (pathFound):
-        # assert(forward_points[src_box] == source_point)
-        path = construct_path(p_box, src_box, forward_prev, forward_points, destination_point)
+        # assert(forward_points[source_box] == source_point)
+        path = construct_path(priority_box, source_box, forward_prev, forward_points, destination_point)
 
     else:
         path.append(source_point)
         path.append(destination_point)
-        boxes[src_box] = True
-        boxes[dst_box] = True
+        boxes[source_box] = True
+        boxes[destination_box] = True
         print("No path!")
 
     return path, boxes.keys()
