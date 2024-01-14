@@ -26,27 +26,27 @@ def find_path(source_point, destination_point, mesh):   # function definition
     dst_box = find_box(destination_point, mesh)
 
     # scan through the list of boxes to find which tontains the source point
-    priority_box = source_box
-    if (source_box is None or destination_box is None):
+    priority_box = src_box
+    if (src_box is None or dst_box is None):
         print("No path!")
         path.append(source_point)
         path.append(destination_point)
 
-        if (source_box is not None):
-            boxes[source_box] = True
-        if (destination_box is not None):
-            boxes[destination_box] = True
+        if (src_box is not None):
+            boxes[src_box] = True
+        if (dst_box is not None):
+            boxes[dst_box] = True
         return path, boxes.keys()   # instead of returning a list indicating  that you haven't visited any boxes
     
     # do this as well for the destination point
     if (source_point == destination_point):
         path.append(source_point)
         path.append(destination_point)
-        boxes[source_box] = True
-        boxes[destination_box] = True
+        boxes[src_box] = True
+        boxes[dst_box] = True
         return path, boxes.keys()   # return a list of these two boxes
 
-    boxes[source_box] = True
+    boxes[src_box] = True
     priority_source = source_point
     entrypoint = None
     frontier = []  # takes in a (priority, {stuff})
@@ -54,20 +54,20 @@ def find_path(source_point, destination_point, mesh):   # function definition
     # stuff has:
     # current box
     # destination type (source or destination) to distinguish forward or back
-    heappush(frontier, (-1, source_box, destination_point))
-    heappush(frontier, (-1, destination_box, source_point))
+    heappush(frontier, (-1, src_box, destination_point))
+    heappush(frontier, (-1, dst_box, source_point))
 
     # detail points
-    forward_points = {source_box : source_point}
-    backward_points = {destination_box : destination_point}
+    forward_points = {src_box : source_point}
+    backward_points = {dst_box : destination_point}
 
     # used to track edge costs
-    forward_cost = {source_box: 0}
-    backward_cost = {destination_box: 0}
+    forward_cost = {src_box: 0}
+    backward_cost = {dst_box: 0}
 
     # track backpointers
-    forward_prev = {source_box : None}
-    backward_prev = {destination_box : None}
+    forward_prev = {src_box : None}
+    backward_prev = {dst_box : None}
 
     pathFound = False
     while (frontier):
@@ -80,9 +80,9 @@ def find_path(source_point, destination_point, mesh):   # function definition
             pathFound = True
             break
 
-        points, prev, cost_so_far, goal_box = (forward_points, forward_prev, forward_cost, destination_box) \
+        points, prev, cost_so_far, goal_box = (forward_points, forward_prev, forward_cost, dst_box) \
                                                 if (curr_goal == destination_point) else \
-                                                (backward_points, backward_prev, backward_cost, source_box)
+                                                (backward_points, backward_prev, backward_cost, src_box)
         priority_source = points[priority_box]
 
         for neighbor in mesh["adj"][priority_box]:
@@ -111,11 +111,11 @@ def find_path(source_point, destination_point, mesh):   # function definition
 
     if (pathFound):
         # print("Found Path")
-        # assert(forward_points[source_box] == source_point)
-        # assert(backward_points[destination_box] == destination_point)
+        # assert(forward_points[src_box] == source_point)
+        # assert(backward_points[dst_box] == destination_point)
         # assert(len(path) == len(set(path)))
-        forward_path = construct_path(priority_box, source_box, forward_prev, forward_points)
-        backward_path = construct_path(priority_box, destination_box, backward_prev, backward_points, None, False)
+        forward_path = construct_path(priority_box, src_box, forward_prev, forward_points)
+        backward_path = construct_path(priority_box, dst_box, backward_prev, backward_points, None, False)
 
         # handle any cases where we have duplicate when stitching paths together
         if (len(forward_path) > 0 and len(backward_path) > 0):
@@ -128,8 +128,8 @@ def find_path(source_point, destination_point, mesh):   # function definition
     else:
         path.append(source_point)
         path.append(destination_point)
-        boxes[source_box] = True
-        boxes[destination_box] = True
+        boxes[src_box] = True
+        boxes[dst_box] = True
         print("No path!")
 
     return path, boxes.keys()
@@ -238,23 +238,23 @@ def astar_find_path(source_point, destination_point, mesh):
     boxes = {}
     # p is the current from the source
     # q will be the current from the
-    source_box = find_box(source_point, mesh)
-    destination_box = find_box(destination_point, mesh)
+    src_box = find_box(source_point, mesh)
+    dst_box = find_box(destination_point, mesh)
 
-    priority_box = source_box
-    q_box = destination_box
+    priority_box = src_box
+    q_box = dst_box
 
-    if (source_box is None or destination_box is None):
+    if (src_box is None or dst_box is None):
         print("No path!")
         path.append(source_point)
         path.append(destination_point)
-        if (source_box is not None):
-            boxes[source_box] = True
-        if (destination_box is not None):
-            boxes[destination_box] = True
+        if (src_box is not None):
+            boxes[src_box] = True
+        if (dst_box is not None):
+            boxes[dst_box] = True
         return path, boxes.keys()
 
-    boxes[source_box] = True
+    boxes[src_box] = True
     priority_source = source_point
     entrypoint = None
     frontier = []  # takes in a (priority, {stuff})
@@ -263,10 +263,10 @@ def astar_find_path(source_point, destination_point, mesh):
     # current box
 
     heappush(frontier, (0, priority_box))
-    forward_points = {source_box : source_point}
+    forward_points = {src_box : source_point}
 
     # used to track edge costs
-    forward_cost = {source_box: 0}
+    forward_cost = {src_box: 0}
 
     # track backpointers
     forward_prev = {}
@@ -280,7 +280,7 @@ def astar_find_path(source_point, destination_point, mesh):
         priority_priority, priority_box = heappop(frontier)
         boxes[priority_box] = True
 
-        if (priority_box == destination_box):
+        if (priority_box == dst_box):
             pathFound = True
             break
 
@@ -291,7 +291,7 @@ def astar_find_path(source_point, destination_point, mesh):
             link_cost = euclidean(priority_source, entrypoint)
             new_cost = forward_cost[priority_box] + link_cost
 
-            # if (neighbor == destination_box):
+            # if (neighbor == dst_box):
             #     new_cost += euclidean(entrypoint, destination_point)
 
             if (neighbor not in forward_prev or new_cost < forward_cost[neighbor]):
@@ -299,7 +299,7 @@ def astar_find_path(source_point, destination_point, mesh):
                 forward_prev[neighbor] = priority_box
                 forward_points[neighbor] = entrypoint
 
-                # if (neighbor != destination_box):
+                # if (neighbor != dst_box):
                 #     priority_priority = new_cost + euclidean(entrypoint, destination_point)
                 # else:
                 #     priority_priority = new_cost
@@ -309,14 +309,14 @@ def astar_find_path(source_point, destination_point, mesh):
                 heappush(frontier, (priority_priority, neighbor))
 
     if (pathFound):
-        # assert(forward_points[source_box] == source_point)
-        path = construct_path(priority_box, source_box, forward_prev, forward_points, destination_point)
+        # assert(forward_points[src_box] == source_point)
+        path = construct_path(priority_box, src_box, forward_prev, forward_points, destination_point)
 
     else:
         path.append(source_point)
         path.append(destination_point)
-        boxes[source_box] = True
-        boxes[destination_box] = True
+        boxes[src_box] = True
+        boxes[dst_box] = True
         print("No path!")
 
     return path, boxes.keys()
