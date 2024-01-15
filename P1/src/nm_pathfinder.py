@@ -2,7 +2,7 @@
 from heapq import heappop, heappush     # heap queue library
 from math import sqrt                   # math library
 
-# find_path()
+# find_path():
 # Note that this function is being called in nm_interactive.py
 def find_path(source_point, destination_point, mesh):
 
@@ -26,7 +26,7 @@ def find_path(source_point, destination_point, mesh):
 
     return path, boxes.keys()
 
-# find boxes()
+# find boxes():
 # Identify the source and destination boxes.
 def find_boxes(src, dst, mesh):
     source_box = None
@@ -43,16 +43,20 @@ def find_boxes(src, dst, mesh):
     # return a list of these two boxes.
     return source_box, destination_box
 
-# get_detail_point()
+# get_detail_point():
 def get_detail_point(current_pt, next_box):
     x = min(max(current_pt[0], next_box[0]), next_box[1])
     y = min(max(current_pt[1], next_box[2]), next_box[3])
     return x, y
 
-# simple_search() -> a_star() -> bidirectional_a_star()
+# simple_search(): OLD
 # Implement the simplest complete search algorithm you can.
 # Modify your simple search to compute a legal list of line segments demonstrating the path.
+#
+# a_star(): OLD
 # Modify the supplied Dijkstra's implementation into an A* implementation.
+#
+# bidirectional_a_star(): NEW
 # Modify your A* into a bidirectional A*.
 def bidirectional_a_star(src, dst, mesh):
 
