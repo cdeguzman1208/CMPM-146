@@ -22,7 +22,7 @@ def find_path(source_point, destination_point, mesh):
     path = []
     boxes = {}
     
-    path, boxes = bidirectional_a_star(source_point, destination_point, mesh)
+    path, boxes = a_star(source_point, destination_point, mesh)
 
     return path, boxes.keys()
 
@@ -53,12 +53,10 @@ def get_detail_point(current_pt, next_box):
 # Implement the simplest complete search algorithm you can.
 # Modify your simple search to compute a legal list of line segments demonstrating the path.
 #
-# a_star(): OLD
+# a_star(): NEW
 # Modify the supplied Dijkstra's implementation into an A* implementation.
-#
-# bidirectional_a_star(): NEW
 # Modify your A* into a bidirectional A*.
-def bidirectional_a_star(src, dst, mesh):
+def a_star(src, dst, mesh):
 
     # INITIALIZATION
     src_box, dst_box = find_boxes(src, dst, mesh)   # identifies the boxes containing the source and destination points in the mesh
