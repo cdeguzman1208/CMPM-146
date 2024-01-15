@@ -1,7 +1,6 @@
 # imports
 from heapq import heappop, heappush     # heap queue library
 from math import sqrt                   # math library
-from queue import *                     # queue library
 
 # find_path()
 # Note that this function is being called in nm_interactive.py
