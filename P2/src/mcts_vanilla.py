@@ -1,4 +1,3 @@
-
 from mcts_node import MCTSNode
 from p2_t3 import Board
 from random import choice
@@ -40,7 +39,6 @@ def expand_leaf(node: MCTSNode, board: Board, state):
     """
     pass
 
-
 def rollout(board: Board, state):
     """ Given the state of the game, the rollout plays out the remainder randomly.
 
@@ -53,7 +51,6 @@ def rollout(board: Board, state):
 
     """
     pass
-
 
 def backpropagate(node: MCTSNode|None, won: bool):
     """ Navigates the tree from a leaf node to the root, updating the win and visit count of each node along the path.

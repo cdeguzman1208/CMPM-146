@@ -1,5 +1,3 @@
-
-
 class MCTSNode:
     def __init__(self, parent=None, parent_action=None, action_list=[]):
         """ Initializes the tree node for MCTS. The node stores links to other nodes in the tree (parent and child

@@ -1,4 +1,3 @@
-
 from mcts_node import MCTSNode
 from p2_t3 import Board
 from random import choice
