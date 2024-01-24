@@ -5,9 +5,8 @@ from math import sqrt                   # math library
 # find_path():
 # Note that this function is being called in nm_interactive.py
 def find_path(source_point, destination_point, mesh):
-
     """
-    Searches for a path from source_point to destination_point through the mesh
+    Searches for a path from source_point to destination_point through the mesh using A* algorithm
 
     Args:
         source_point: starting point of the pathfinder
@@ -15,17 +14,80 @@ def find_path(source_point, destination_point, mesh):
         mesh: pathway constraints the path adheres to
 
     Returns:
-        A path (list of points) from source_point to destination_point if exists
+        A path (list of points) from source_point to destination_point if it exists
         A list of boxes explored by the algorithm
     """
 
     path = []
     boxes = {}
-    
-    path, boxes = a_star(source_point, destination_point, mesh)
 
+    # # Perform A* search from source to destination
+    # forward_path = A_star(source_point, destination_point, heuristic, mesh)
+
+    # # If the forward path exists, perform A* search from destination to source
+    # if forward_path:
+    #     backward_path = A_star(destination_point, source_point, heuristic, mesh)
+    # else:
+    #     backward_path = None
+
+    # if backward_path:
+    #     # Combine the forward and backward paths
+    #     combined_path = forward_path[:-1] + backward_path[::-1]
+    #     explored_boxes = set(forward_path) | set(backward_path)
+    # else:
+    #     combined_path = []
+    #     explored_boxes = set()
+
+    # using new bidrectional_a_star() algorithm:
+    path, boxes = bidirectional_a_star(source_point, destination_point, mesh)
+
+    # return combined_path, explored_boxes
     return path, boxes.keys()
 
+# Helper Functions ---------------------------------------------------------------------------------------------------------------------------------
+
+def heuristic(point1, point2):
+    """
+    Euclidean distance heuristic for A* algorithm
+    """
+    x1, y1 = point1
+    x2, y2 = point2
+    return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+
+def reconstruct_path(came_from, current):
+    """
+    Reconstructs the path from the came_from dictionary
+    """
+    total_path = [current]
+    while current in came_from:
+        current = came_from[current]
+        total_path.insert(0, current)
+    return total_path
+
+# A_star():
+# Modify the supplied Dijkstra's implementation into an A* implementation.
+def A_star(start, goal, heuristic_func, mesh):
+    open_set = [(0, start)]  # Priority queue with initial cost
+    came_from = {}
+
+    g_score = {start: 0}
+
+    while open_set:
+        current_cost, current_node = heapq.heappop(open_set)
+
+        if current_node == goal:
+            return reconstruct_path(came_from, goal)
+
+        for neighbor in mesh.get(current_node, []):
+            tentative_g_score = g_score[current_node] + heuristic_func(current_node, neighbor)
+
+            if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
+                g_score[neighbor] = tentative_g_score
+                heapq.heappush(open_set, (tentative_g_score + heuristic_func(neighbor, goal), neighbor))
+                came_from[neighbor] = current_node
+
+        return None
+    
 # find boxes():
 # Identify the source and destination boxes.
 def find_boxes(src, dst, mesh):
@@ -48,21 +110,16 @@ def get_detail_point(current_pt, next_box):
     x = min(max(current_pt[0], next_box[0]), next_box[1])
     y = min(max(current_pt[1], next_box[2]), next_box[3])
     return x, y
-
-# simple_search(): OLD
-# Implement the simplest complete search algorithm you can.
-# Modify your simple search to compute a legal list of line segments demonstrating the path.
-#
-# a_star(): NEW
-# Modify the supplied Dijkstra's implementation into an A* implementation.
+    
+# bidirectional_a_star():
 # Modify your A* into a bidirectional A*.
-def a_star(src, dst, mesh):
+def bidirectional_a_star(src, dst, mesh):
 
     # INITIALIZATION
     src_box, dst_box = find_boxes(src, dst, mesh)   # identifies the boxes containing the source and destination points in the mesh
     if src_box is None or dst_box is None:          # if either the source or destination box is not found,
-        print("No source/destination box!")         # the function prints an error message
-        return [], {}                               # and returns an empty path and an empty dictionary
+        print("No path!")                           # the function prints an error message
+        return [], {}                               # and returns an empty path
     
     # DISTANCE AND HEURISTIC FUNCTIONS
     def distance(start, end):                       # computes the Euclidean distance between two points
@@ -154,15 +211,9 @@ def a_star(src, dst, mesh):
                     boxes[c] = entry_point
     
     # ERROR HANDLING
-    if not path:
-        # if no valid path is found, the function prints an error message
-        print("No path!")
-
-        # and constructs a degenerate path consisting of the source and destination points
-        path.append(src)
-        path.append(dst)
-        boxes[src_box] = True
-        boxes[dst_box] = True
+    if not path:                # if no valid path is found,
+        print("No path!")       # the function prints an error message
+        return [], {}           # and returns an empty path
     
     # RETURN
     return path, boxes  # returns the final path and the boxes dictionary mapping boxes to detailed points
