@@ -2,40 +2,40 @@ import sys
 sys.path.insert(0, '../')
 from planet_wars import issue_order
 
-
 def attack_weakest_enemy_planet(state):
-    # (1) If we currently have a fleet in flight, abort plan.
-    if len(state.my_fleets()) >= 1:
-        return False
-
-    # (2) Find my strongest planet.
-    strongest_planet = max(state.my_planets(), key=lambda t: t.num_ships, default=None)
-
-    # (3) Find the weakest enemy planet.
-    weakest_planet = min(state.enemy_planets(), key=lambda t: t.num_ships, default=None)
-
-    if not strongest_planet or not weakest_planet:
-        # No legal source or destination
-        return False
-    else:
-        # (4) Send half the ships from my strongest planet to the weakest enemy planet.
-        return issue_order(state, strongest_planet.ID, weakest_planet.ID, strongest_planet.num_ships / 2)
-
-
-def spread_to_weakest_neutral_planet(state):
-    # (1) If we currently have a fleet in flight, just do nothing.
-    if len(state.my_fleets()) >= 1:
-        return False
-
-    # (2) Find my strongest planet.
-    strongest_planet = max(state.my_planets(), key=lambda p: p.num_ships, default=None)
-
-    # (3) Find the weakest neutral planet.
-    weakest_planet = min(state.neutral_planets(), key=lambda p: p.num_ships, default=None)
-
-    if not strongest_planet or not weakest_planet:
-        # No legal source or destination
+    src_planet = None
+    dst_planet = None
+    min_cost = 10000
+    for my_planet in state.my_planets():
+        for enemy_planet in state.enemy_planets():
+            distance = state.distance(my_planet.ID, enemy_planet.ID)
+            cost = enemy_planet.num_ships + (distance * enemy_planet.growth_rate) + 1
+            if cost < min_cost and cost < my_planet.num_ships / 2:
+                if enemy_planet not in [fleet.destination_planet for fleet in state.my_fleets()]:
+                    min_cost = cost
+                    src_planet = my_planet
+                    dst_planet = enemy_planet
+    
+    if not src_planet or not dst_planet:
         return False
     else:
-        # (4) Send half the ships from my strongest planet to the weakest enemy planet.
-        return issue_order(state, strongest_planet.ID, weakest_planet.ID, strongest_planet.num_ships / 2)
+        return issue_order(state, src_planet.ID, dst_planet.ID, min_cost)
+
+def spread_to_weakest_neutral_planet(state):  
+    src_planet = None
+    dst_planet = None
+    min_cost = 10000
+    for my_planet in state.my_planets():
+        for neutral_planet in state.neutral_planets():
+            cost = neutral_planet.num_ships + 1
+            if cost < min_cost:
+                print(cost)
+                if neutral_planet not in [fleet.destination_planet for fleet in state.my_fleets()]:
+                    min_cost = cost
+                    src_planet = my_planet
+                    dst_planet = neutral_planet
+
+    if not src_planet or not dst_planet:
+        return False
+    else:
+        return issue_order(state, src_planet.ID, dst_planet.ID, min_cost)
