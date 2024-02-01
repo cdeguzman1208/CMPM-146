@@ -10,8 +10,8 @@ def attack_weakest_enemy_planet(state):
         for enemy_planet in state.enemy_planets():
             distance = state.distance(my_planet.ID, enemy_planet.ID)
             cost = enemy_planet.num_ships + (distance * enemy_planet.growth_rate) + 1
-            if cost < min_cost and cost < my_planet.num_ships / 2:
-                if enemy_planet not in [fleet.destination_planet for fleet in state.my_fleets()]:
+            if cost < min_cost and cost < my_planet.num_ships:
+                if enemy_planet.ID not in [fleet.destination_planet for fleet in state.my_fleets()]:
                     min_cost = cost
                     src_planet = my_planet
                     dst_planet = enemy_planet
@@ -28,9 +28,8 @@ def spread_to_weakest_neutral_planet(state):
     for my_planet in state.my_planets():
         for neutral_planet in state.neutral_planets():
             cost = neutral_planet.num_ships + 1
-            if cost < min_cost:
-                print(cost)
-                if neutral_planet not in [fleet.destination_planet for fleet in state.my_fleets()]:
+            if cost < min_cost and cost < my_planet.num_ships:
+                if neutral_planet.ID not in [fleet.destination_planet for fleet in state.my_fleets()]:
                     min_cost = cost
                     src_planet = my_planet
                     dst_planet = neutral_planet
