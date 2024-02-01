@@ -2,6 +2,7 @@ import sys
 sys.path.insert(0, '../')
 from planet_wars import issue_order
 
+# attacks "weakest" enemy planet by factoring each enemy planets' number of ships, growth rate, and distance from each friendly planet
 def attack_weakest_enemy_planet(state):
     src_planet = None
     dst_planet = None
@@ -21,6 +22,7 @@ def attack_weakest_enemy_planet(state):
     else:
         return issue_order(state, src_planet.ID, dst_planet.ID, min_cost)
 
+# spreads to weakest neutral planet, if any friendly planet has enough ships to send to it
 def spread_to_weakest_neutral_planet(state):  
     src_planet = None
     dst_planet = None
