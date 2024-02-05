@@ -128,18 +128,16 @@ pyhop.declare_methods ('produce_stick', craft_stick)
 # declare state
 state = pyhop.State('state')
 state.wood = {'agent': 0}
-# state.time = {'agent': 4}
-state.time = {'agent': 46}
+state.time = {'agent': 42}
 state.plank = {'agent': 0}
 state.stick = {'agent': 0}
 state.wooden_axe = {'agent': 0}
+state.made_wooden_axe = {'agent': False}
 # your code here
 state.bench = {'agent': 0}
-state.made_wooden_axe = {'agent': False}
 state.made_bench = {'agent': False}
 
 # pyhop.print_operators()
 # pyhop.print_methods()
 
-# pyhop.pyhop(state, [('have_enough', 'agent', 'wood', 1)], verbose=3)
 pyhop.pyhop(state, [('have_enough', 'agent', 'wood', 12)], verbose=3)
