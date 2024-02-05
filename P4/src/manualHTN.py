@@ -18,15 +18,6 @@ def op_craft_wooden_axe_at_bench (state, ID):
 		return state
 	return False
 
-def op_craft_wooden_axe_at_bench (state, ID):
-	if state.time[ID] >= 1 and state.bench[ID] >= 1 and state.plank[ID] >= 3 and state.stick[ID] >=2:
-		state.wooden_axe[ID] += 1
-		state.plank[ID] -= 3
-		state.stick[ID] -= 2
-		state.time[ID] -= 1
-		return state
-	return False
-
 # your code here
 def op_craft_plank(state, ID):
 	if(state.time[ID] >= 1 and state.wood[ID] >= 1):
