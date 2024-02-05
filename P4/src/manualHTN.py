@@ -59,8 +59,7 @@ def op_get_wood_with_wooden_axe(state, ID):
 		return state
 	return False
 
-pyhop.declare_operators (op_punch_for_wood, op_craft_wooden_axe_at_bench /
-			 op_craft_plank, op_craft_bench, op_craft_stick, op_get_wood_with_wooden_axe)
+pyhop.declare_operators (op_punch_for_wood, op_craft_wooden_axe_at_bench, op_craft_plank, op_craft_bench, op_craft_stick, op_get_wood_with_wooden_axe)
 
 '''end operators'''
 
