@@ -18,15 +18,6 @@ def op_craft_wooden_axe_at_bench (state, ID):
 		return state
 	return False
 
-def op_craft_wooden_axe_at_bench (state, ID):
-	if state.time[ID] >= 1 and state.bench[ID] >= 1 and state.plank[ID] >= 3 and state.stick[ID] >=2:
-		state.wooden_axe[ID] += 1
-		state.plank[ID] -= 3
-		state.stick[ID] -= 2
-		state.time[ID] -= 1
-		return state
-	return False
-
 # your code here
 def op_craft_plank(state, ID):
 	if(state.time[ID] >= 1 and state.wood[ID] >= 1):
@@ -70,7 +61,7 @@ def produce_enough (state, ID, item, num):
 	return [('produce', ID, item), ('have_enough', ID, item, num)]
 
 def produce (state, ID, item):
-	if item == 'wood': 
+	if item == 'wood':
 		return [('produce_wood', ID)]
 	# your code here
 	elif item == 'plank':
@@ -137,7 +128,8 @@ state.made_wooden_axe = {'agent': False}
 state.bench = {'agent': 0}
 state.made_bench = {'agent': False}
 
-# pyhop.print_operators()
-# pyhop.print_methods()
+pyhop.print_operators()
+pyhop.print_methods()
 
-pyhop.pyhop(state, [('have_enough', 'agent', 'wood', 12)], verbose=3)
+# pyhop.pyhop(state, [('have_enough', 'agent', 'wood', 1)], verbose=3)
+# pyhop.pyhop(state, [('have_enough', 'agent', 'wood', 12)], verbose=3)

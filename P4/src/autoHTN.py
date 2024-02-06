@@ -32,6 +32,7 @@ def make_method (name, rule):
 						condition.append(('have_enough', ID, k, v))
 		condition.append(('op_' + name, ID))
 		return condition
+	method.__name__ = name
 	return method
 
 '''
@@ -72,6 +73,9 @@ This implementation creates an operator function that modifies the state based o
 rule. It iterates through the keys of the rule and updates the state accordingly. The operator is
 unnamed.
 '''
+
+# Does the state change even if the requirements aren't satisfied?
+
 def make_operator (rule):
 	def operator (state, ID):
 		# your code here
@@ -83,6 +87,9 @@ def make_operator (rule):
 				for k, v in value.items():
 					if getattr(state, k)[ID] >= v:
 						setattr(state, k, {ID: getattr(state, k)[ID] - v})
+					# Added to check if not enough items
+					else:
+						return False
 			if key == 'Time':
 				if state.time[ID] >= v:
 					state.time[ID] -= v
@@ -104,7 +111,8 @@ def declare_operators (data):
 	r_list = []
 	for r in recipes:
 		name = r.replace(' ', '_')
-		op = make_operator(recipes[r], r)
+		op = make_operator(recipes[r])
+		op.__name__ = 'op_' + name
 		r_list.append(op)
 		
 	for op in r_list:
@@ -148,17 +156,19 @@ if __name__ == '__main__':
 	with open(rules_filename) as f:
 		data = json.load(f)
 
-	state = set_up_state(data, 'agent', time=239) # allot time here
+	state = set_up_state(data, 'agent', time=300) # allot time here
 	goals = set_up_goals(data, 'agent')
 
 	declare_operators(data)
 	declare_methods(data)
 	add_heuristic(data, 'agent')
 
-	# pyhop.print_operators()
-	# pyhop.print_methods()
+	pyhop.print_operators()
+	pyhop.print_methods()
 
 	# Hint: verbose output can take a long time even if the solution is correct; 
 	# try verbose=1 if it is taking too long
-	pyhop.pyhop(state, goals, verbose=3)
+	# pyhop.pyhop(state, goals, verbose=3)
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
+
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'plank', 1)], verbose=3)
