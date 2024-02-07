@@ -34,6 +34,7 @@ def op_craft_bench (state, ID):
 		state.bench[ID] += 1
 		return state
 	return False
+
 def op_craft_stick (state, ID):
 	if(state.time[ID] >= 1 and state.plank[ID] >= 2):
 		state.plank[ID] -= 2
