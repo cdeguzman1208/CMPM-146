@@ -33,6 +33,7 @@ def make_method (name, rule):
 						condition.append(('have_enough', ID, k, v))
 		condition.append(('op_' + name, ID))
 		return condition
+	method.__name__ = name
 	return method
 
 '''
@@ -160,7 +161,7 @@ if __name__ == '__main__':
 	with open(rules_filename) as f:
 		data = json.load(f)
 
-	state = set_up_state(data, 'agent', time=239) # allot time here
+	state = set_up_state(data, 'agent', time=250) # allot time here
 	goals = set_up_goals(data, 'agent')
 
 	declare_operators(data)
@@ -168,9 +169,54 @@ if __name__ == '__main__':
 	add_heuristic(data, 'agent')
 
 	# pyhop.print_operators()
-	# pyhop.print_methods()
+	pyhop.print_methods()
 
 	# Hint: verbose output can take a long time even if the solution is correct; 
 	# try verbose=1 if it is taking too long
-	pyhop.pyhop(state, goals, verbose=3)
+	# pyhop.pyhop(state, goals, verbose=3)
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
+
+	'''Required tests'''
+	
+	# TEST 1
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'plank', 1)], verbose=3)
+	'''pass'''
+	
+	# TEST 2
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'wooden_pickaxe', 1)], verbose=3)
+	'''returns a plan, but seems wrong. The last action is missing one plank'''
+
+	# TEST 3
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'furnace', 1)], verbose=3)
+	'''returns a plan'''
+
+	# TEST 4
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1)], verbose=3)
+	'''returns a plan'''
+
+	# TEST 5
+	# state.plank = {'agent': 1}
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'plank', 1)], verbose=3)
+	'''pass'''
+
+	# TEST 6
+	# state.plank = {'agent': 3}
+	# state.stick = {'agent': 2}
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'wooden_pickaxe', 1)], verbose=3)
+	'''pass'''
+
+	# TEST 7
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'stone_pickaxe', 1)], verbose=3)
+	'''return a plan, but same problem as TEST 2'''
+
+	# TEST 8
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'iron_pickaxe', 1)], verbose=3)
+	'''returns a plan'''
+
+	# TEST 9
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 10)], verbose=3)
+	'''returns a plan'''
+
+	# Test 10
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
+	'''returns a plan'''
