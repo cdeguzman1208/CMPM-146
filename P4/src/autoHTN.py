@@ -29,7 +29,7 @@ def make_method (name, rule):
 		for key, value in rule.items():
 			if key != 'Produces':
 				if type(value) == dict:
-					for k, v in value.items():
+					for k, v in reversed(value.items()):
 						condition.append(('have_enough', ID, k, v))
 		condition.append(('op_' + name, ID))
 		return condition
@@ -70,22 +70,42 @@ This function generates an operator function for a given crafting recipe. It is 
 effect of executing a particular recipe on the state.
 '''
 def make_operator (rule):
+
 	def operator (state, ID):
 		# your code here
+		# CHECK LOOP
+		for key, value in rule.items():
+			if key == 'Requires':
+				for k, v in value.items():
+					if getattr(state, k)[ID] < v:
+						return False
+			if key == 'Consumes':
+				for k, v in value.items():
+					if getattr(state, k)[ID] < v:
+						return False
+			if key == 'Time':
+				if state.time[ID] < value:
+					return False
+
+		
+		# CHANGE STATE LOOP
 		for key, value in rule.items():
 			if key == 'Produces':
 				for k, v in value.items():
 					setattr(state, k, {ID: getattr(state, k)[ID] + v})
+					# Add tool to made state
+					if hasattr(state, 'made_'+k):
+						setattr(state, 'made_'+k, {ID: True})
 			if key == 'Consumes':
 				for k, v in value.items():
-					if getattr(state, k)[ID] >= v:
-						setattr(state, k, {ID: getattr(state, k)[ID] - v})
+					setattr(state, k, {ID: getattr(state, k)[ID] - v})
 			if key == 'Time':
-				if state.time[ID] >= v:
-					state.time[ID] -= v
-				else:
-					return False
+				state.time[ID] -= value
+
+
 		return state
+	
+
 	return operator
 
 '''
@@ -116,12 +136,19 @@ def add_heuristic (data, ID):
 	# prune search branch if heuristic() returns True
 	# do not change parameters to heuristic(), but can add more heuristic functions with the same parameters: 
 	# e.g. def heuristic2(...); pyhop.add_check(heuristic2)
-	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
-		if curr_task in tasks:
-			return False # if True, prune this branch
-		# your code here
-		return True
-	pyhop.add_check(heuristic) 
+	'''def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
+		if depth > 45:
+			return True
+		return False
+	pyhop.add_check(heuristic)'''
+
+	# Checks to see if tool has already been made and prunes if it has
+	def heuristic2 (state, curr_task, tasks, plan, depth, calling_stack):
+		item = curr_task[0][9:] # This gets a substring without the 'produce_' part
+		if item in data['Tools'] and getattr(state, 'made_'+item)[ID]:
+			return True
+		return False
+	pyhop.add_check(heuristic2) 
 
 '''
 set_up_state():
@@ -169,7 +196,7 @@ if __name__ == '__main__':
 	add_heuristic(data, 'agent')
 
 	# pyhop.print_operators()
-	pyhop.print_methods()
+	# pyhop.print_methods()
 
 	# Hint: verbose output can take a long time even if the solution is correct; 
 	# try verbose=1 if it is taking too long
@@ -181,18 +208,21 @@ if __name__ == '__main__':
 	# TEST 1
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'plank', 1)], verbose=3)
 	'''pass'''
+
+	# RANDOM TEST
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'bench', 1), ('have_enough', 'agent', 'stick', 2), ('have_enough', 'agent', 'plank', 3)], verbose=3)
 	
 	# TEST 2
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'wooden_pickaxe', 1)], verbose=3)
-	'''returns a plan, but seems wrong. The last action is missing one plank'''
+	'''pass'''
 
 	# TEST 3
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'furnace', 1)], verbose=3)
-	'''returns a plan'''
+	'''pass'''
 
 	# TEST 4
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1)], verbose=3)
-	'''returns a plan'''
+	'''pass'''
 
 	# TEST 5
 	# state.plank = {'agent': 1}
@@ -207,16 +237,16 @@ if __name__ == '__main__':
 
 	# TEST 7
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'stone_pickaxe', 1)], verbose=3)
-	'''return a plan, but same problem as TEST 2'''
+	'''pass'''
 
 	# TEST 8
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'iron_pickaxe', 1)], verbose=3)
-	'''returns a plan'''
+	'''Max recursion depth'''
 
 	# TEST 9
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 10)], verbose=3)
-	'''returns a plan'''
+	'''Max recursion depth'''
 
 	# Test 10
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
-	'''returns a plan'''
+	'''Max recursion depth'''
