@@ -137,18 +137,18 @@ def add_heuristic (data, ID):
 	# do not change parameters to heuristic(), but can add more heuristic functions with the same parameters: 
 	# e.g. def heuristic2(...); pyhop.add_check(heuristic2)
 	'''def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
-		if depth > 45:
+		if depth > 50:
 			return True
 		return False
 	pyhop.add_check(heuristic)'''
 
 	# Checks to see if tool has already been made and prunes if it has
-	def heuristic2 (state, curr_task, tasks, plan, depth, calling_stack):
+	'''def heuristic2 (state, curr_task, tasks, plan, depth, calling_stack):
 		item = curr_task[0][9:] # This gets a substring without the 'produce_' part
 		if item in data['Tools'] and getattr(state, 'made_'+item)[ID]:
 			return True
 		return False
-	pyhop.add_check(heuristic2) 
+	pyhop.add_check(heuristic2) '''
 
 '''
 set_up_state():
@@ -188,7 +188,7 @@ if __name__ == '__main__':
 	with open(rules_filename) as f:
 		data = json.load(f)
 
-	state = set_up_state(data, 'agent', time=250) # allot time here
+	state = set_up_state(data, 'agent', time=100) # allot time here
 	goals = set_up_goals(data, 'agent')
 
 	declare_operators(data)
