@@ -1,5 +1,6 @@
 import pyhop
 import json
+import time
 
 def check_enough (state, ID, item, num):
 	if getattr(state,item)[ID] >= num: return []
@@ -17,9 +18,9 @@ pyhop.declare_methods ('produce', produce)
 
 '''
 make_method():
-This implementation creates a method that checks requirements based on the input rule by
-iterating over the key-value pairs. It generates a list of conditions (condition) and includes the
-operation itself in the list. The method is named based on the input name.
+This function dynamically creates a method for a particular crafting recipe. It generates a
+method that ensures all necessary requirements are met before executing the associated
+operator.
 '''
 def make_method (name, rule):
 	def method (state, ID):
@@ -37,10 +38,9 @@ def make_method (name, rule):
 
 '''
 declare_methods():
-This implementation creates a method table (method_table) where each entry corresponds to a
-produced item, and the associated value is a list of tuples containing the method and its associated
-time. The methods are sorted based on time within each produce category. Finally, the methods are
-declared using pyhop.declare_methods.
+This function organizes and declares methods for each crafting recipe in the provided data. It
+sorts the recipes by the time it takes to produce the item and creates methods for each one
+using make_method.
 '''
 def declare_methods (data):
 	# some recipes are faster than others for the same product even though they might require extra tools
@@ -48,34 +48,27 @@ def declare_methods (data):
 
 	# your code here
 	# hint: call make_method, then declare the method to pyhop using pyhop.declare_methods('foo', m1, m2, ..., mk)	
-	recipes = data['Recipes']
-	method_table = {}
-	for r in recipes:
-		name = r.replace(' ', '_')
-		method = make_method(name, recipes[r])
-		r_data = recipes[r]
-		produce = list(r_data['Produces'])[0]
-		
-		if produce not in method_table:
-			method_table[produce] = []
-		m_tuple = (method, r_data['Time'])
-		method_table[produce].append(m_tuple)
-		method_table[produce].sort(key=lambda s: s[1])
-		
-	for i in method_table:
-		name = 'produce_' + i
-		for j in method_table[i]:
-			pyhop.declare_methods(name, j[0])
+	method_dict = {}
+	for key, value in sorted(data['Recipes'].items(), key=lambda item: item[1]["Time"], reverse=True):
+		key = key.replace(' ', '_')
+		for name_of_produce in value['Produces'].items():
+			if name_of_produce in method_dict:
+				if isinstance(method_dict[name_of_produce], list):
+					my_method = make_method(key, value)
+					method_dict[name_of_produce].append(my_method)
+				else:
+					method_dict[name_of_produce] = [method_dict[name_of_produce]]
+			else:
+				my_method = make_method(key, value)
+				method_dict[name_of_produce] = [my_method]
+	for name, method in method_dict.items():
+		pyhop.declare_methods('produce_' + name[0], *method)
 
 '''
 make_operator():
-This implementation creates an operator function that modifies the state based on the input
-rule. It iterates through the keys of the rule and updates the state accordingly. The operator is
-unnamed.
+This function generates an operator function for a given crafting recipe. It is used to define the
+effect of executing a particular recipe on the state.
 '''
-
-# Does the state change even if the requirements aren't satisfied?
-
 def make_operator (rule):
 	def operator (state, ID):
 		# your code here
@@ -87,9 +80,6 @@ def make_operator (rule):
 				for k, v in value.items():
 					if getattr(state, k)[ID] >= v:
 						setattr(state, k, {ID: getattr(state, k)[ID] - v})
-					# Added to check if not enough items
-					else:
-						return False
 			if key == 'Time':
 				if state.time[ID] >= v:
 					state.time[ID] -= v
@@ -100,34 +90,44 @@ def make_operator (rule):
 
 '''
 declare_operators():
-This implementation declares operators by calling make_operator on each recipe and appending
-the resulting operator to a list (r_list). It then iterates through this list and declares each operator
-using pyhop.declare_operators(op).
+This function organizes and declares operators for each crafting recipe in the provided data. It
+creates operators for each recipe using make_operator.
 '''
 def declare_operators (data):
 	# your code here
 	# hint: call make_operator, then declare the operator to pyhop using pyhop.declare_operators(o1, o2, ..., ok)
-	recipes = data['Recipes']
-	r_list = []
-	for r in recipes:
-		name = r.replace(' ', '_')
-		op = make_operator(recipes[r])
-		op.__name__ = 'op_' + name
-		r_list.append(op)
-		
-	for op in r_list:
-		pyhop.declare_operators(op)
+	operator_list = []
+	for key, value in sorted(data['Recipes'].items(), key=lambda item: item[1]["Time"], reverse=True):
+		key = key.replace(' ', '_')
+		operator_temp = make_operator(value)
+		time_for_oper = value['Time']
+		operator_temp.__name__ = 'op_' + key
+		operator_list.append((operator_temp, time_for_oper))
+		sorted(operator_list, key=lambda time: time_for_oper, reverse=False)
+	for oper, times in operator_list:
+		pyhop.declare_operators(oper)
 
+'''
+add_heuristic():
+This function adds a heuristic to the planning process. The heuristic prunes search branches
+based on whether a task has already been executed.
+'''
 def add_heuristic (data, ID):
 	# prune search branch if heuristic() returns True
 	# do not change parameters to heuristic(), but can add more heuristic functions with the same parameters: 
 	# e.g. def heuristic2(...); pyhop.add_check(heuristic2)
 	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
+		if curr_task in tasks:
+			return False # if True, prune this branch
 		# your code here
-		return False # if True, prune this branch
+		return True
+	pyhop.add_check(heuristic) 
 
-	pyhop.add_check(heuristic)
-
+'''
+set_up_state():
+This function initializes the initial state for the planning problem. It creates a Pyhop state
+object, sets initial quantities for items and tools, and sets the initial time.
+'''
 def set_up_state (data, ID, time=0):
 	state = pyhop.State('state')
 	state.time = {ID: time}
@@ -137,12 +137,17 @@ def set_up_state (data, ID, time=0):
 
 	for item in data['Tools']:
 		setattr(state, item, {ID: 0})
+		setattr(state, 'made_' + item, {ID: False})
 
 	for item, num in data['Initial'].items():
 		setattr(state, item, {ID: num})
 
 	return state
 
+'''
+set_up_goals():
+This function sets up the goals for the planning problem based on the provided data.
+'''
 def set_up_goals (data, ID):
 	goals = []
 	for item, num in data['Goal'].items():
@@ -156,14 +161,14 @@ if __name__ == '__main__':
 	with open(rules_filename) as f:
 		data = json.load(f)
 
-	state = set_up_state(data, 'agent', time=300) # allot time here
+	state = set_up_state(data, 'agent', time=250) # allot time here
 	goals = set_up_goals(data, 'agent')
 
 	declare_operators(data)
 	declare_methods(data)
 	add_heuristic(data, 'agent')
 
-	pyhop.print_operators()
+	# pyhop.print_operators()
 	pyhop.print_methods()
 
 	# Hint: verbose output can take a long time even if the solution is correct; 
@@ -171,4 +176,47 @@ if __name__ == '__main__':
 	# pyhop.pyhop(state, goals, verbose=3)
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
 
+	'''Required tests'''
+	
+	# TEST 1
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'plank', 1)], verbose=3)
+	'''pass'''
+	
+	# TEST 2
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'wooden_pickaxe', 1)], verbose=3)
+	'''returns a plan, but seems wrong. The last action is missing one plank'''
+
+	# TEST 3
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'furnace', 1)], verbose=3)
+	'''returns a plan'''
+
+	# TEST 4
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1)], verbose=3)
+	'''returns a plan'''
+
+	# TEST 5
+	# state.plank = {'agent': 1}
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'plank', 1)], verbose=3)
+	'''pass'''
+
+	# TEST 6
+	# state.plank = {'agent': 3}
+	# state.stick = {'agent': 2}
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'wooden_pickaxe', 1)], verbose=3)
+	'''pass'''
+
+	# TEST 7
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'stone_pickaxe', 1)], verbose=3)
+	'''return a plan, but same problem as TEST 2'''
+
+	# TEST 8
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'iron_pickaxe', 1)], verbose=3)
+	'''returns a plan'''
+
+	# TEST 9
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 10)], verbose=3)
+	'''returns a plan'''
+
+	# Test 10
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
+	'''returns a plan'''
