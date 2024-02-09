@@ -49,7 +49,7 @@ def declare_methods (data):
 	# your code here
 	# hint: call make_method, then declare the method to pyhop using pyhop.declare_methods('foo', m1, m2, ..., mk)	
 	method_dict = {}
-	for key, value in sorted(data['Recipes'].items(), key=lambda item: item[1]["Time"], reverse=False):
+	for key, value in sorted(data['Recipes'].items(), key=lambda item: item[1]["Time"], reverse=True):
 		key = key.replace(' ', '_')
 		for name_of_produce in value['Produces'].items():
 			if name_of_produce in method_dict:
@@ -136,6 +136,17 @@ def add_heuristic (data, ID):
 	# prune search branch if heuristic() returns True
 	# do not change parameters to heuristic(), but can add more heuristic functions with the same parameters: 
 	# e.g. def heuristic2(...); pyhop.add_check(heuristic2)
+
+	''' 
+		heuristic ideas:
+		- Don't try to make a tool if you are already planning to make the same one in the future
+		- Don't try to make iron tools if you don't have a stone pickaxe
+			DOESN'T WORK
+		- Don't use worse tools if you have better ones
+		- Don't try to make a tool if you are planning to make a worse version of the same tool later
+
+	'''
+	
 	'''def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
 		if depth > 50:
 			return True
@@ -159,16 +170,16 @@ def add_heuristic (data, ID):
 		return False
 	pyhop.add_check(heuristic3)'''
 
-	# Prune task to make duplicate tool
+	# Don't try to make a tool if you are already planning to make the same one in the future
 	def heuristic4 (state, curr_task, tasks, plan, depth, calling_stack):
 		method_name = curr_task[0]
 		if method_name == 'have_enough' and curr_task[2] in data['Tools'] and tasks.count(curr_task) > 1:
-			print('detected duplicate tool creation task: ', curr_task[0])
+			print('detected duplicate tool creation task: ', curr_task[2])
 			return True
 		return False
 	pyhop.add_check(heuristic4)
 
-	# If planning to make an axe/pickaxe, don't try to make a better one first
+	# Don't try to make a tool if you are planning to make a worse version of the same tool later
 	def heuristic5 (state, curr_task, tasks, plan, depth, calling_stack):
 		method_name = curr_task[0]
 		if method_name == 'have_enough' and curr_task[2] in data['Tools']:
@@ -195,15 +206,44 @@ def add_heuristic (data, ID):
 	pyhop.add_check(heuristic5)
 
 	# don't try to make an iron tool before making a furnace
-	def heuristic6 (state, curr_task, tasks, plan, depth, calling_stack):
+	'''def heuristic6 (state, curr_task, tasks, plan, depth, calling_stack):
 		method_name = curr_task[0]
 		if method_name == 'have_enough' and ('have_enough', ID, 'furnace', 1) in tasks:
 			tool_name = curr_task[2]
 			if tool_name == 'iron_axe' or tool_name == 'iron_pickaxe':
 				return True
 		return False
-	pyhop.add_check(heuristic6)
+	pyhop.add_check(heuristic6)'''
+
 	
+
+	# Don't try to make iron tools if you don't have a stone pickaxe
+	'''def heuristic7 (state, curr_task, tasks, plan, depth, calling_stack):
+		method_name = curr_task[0]
+		if method_name == 'have_enough' and not getattr(state, 'made_stone_pickaxe')[ID]:
+			tool_name = curr_task[2]
+			if tool_name == 'iron_axe' or tool_name == 'iron_pickaxe':
+				return True
+		return False
+	pyhop.add_check(heuristic7)'''
+
+	# Don't use worse tools if you have better ones
+	def heuristic8 (state, curr_task, tasks, plan, depth, calling_stack):
+		method_name = curr_task[0]
+		if method_name == 'have_enough' and curr_task[2] in data['Tools']:
+			item_name = curr_task[2]
+			# pickaxe checks
+			if item_name == 'wooden_pickaxe' and (getattr(state, 'made_stone_pickaxe')[ID] or getattr(state, 'made_iron_pickaxe')[ID]):
+				return True
+			if item_name == 'stone_pickaxe' and getattr(state, 'made_iron_pickaxe')[ID]:
+				return True
+			# axe checks
+			if item_name == 'wooden_axe' and (getattr(state, 'made_stone_axe')[ID] or getattr(state, 'made_iron_axe')[ID]):
+				return True
+			if item_name == 'stone_axe' and getattr(state, 'made_iron_axe')[ID]:
+				return True
+		return False
+	pyhop.add_check(heuristic8)
 
 '''
 set_up_state():
@@ -250,8 +290,8 @@ if __name__ == '__main__':
 	declare_methods(data)
 	add_heuristic(data, 'agent')
 
-	# pyhop.print_operators()
-	# pyhop.print_methods()
+	pyhop.print_operators()
+	pyhop.print_methods()
 
 	# Hint: verbose output can take a long time even if the solution is correct; 
 	# try verbose=1 if it is taking too long
@@ -294,8 +334,14 @@ if __name__ == '__main__':
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'stone_pickaxe', 1)], verbose=3)
 	'''pass'''
 
+	# REQUIREMENT TEST FOR TEST 8
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'ingot', 3)], verbose=3)
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'ingot', 3)], verbose=3)
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'stick', 2), ('have_enough', 'agent', 'ingot', 3)], verbose=3)
+	pyhop.pyhop(state, [('have_enough', 'agent', 'bench', 1), ('have_enough', 'agent', 'stick', 2), ('have_enough', 'agent', 'ingot', 3)], verbose=3)
+
 	# TEST 8
-	pyhop.pyhop(state, [('have_enough', 'agent', 'iron_pickaxe', 1)], verbose=3)
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'iron_pickaxe', 1)], verbose=3)
 	'''Max recursion depth'''
 
 	# TEST 9
