@@ -139,27 +139,25 @@ def add_heuristic (data, ID):
 
 	''' 
 		heuristic ideas:
+		- Depth Check
+			Not sure if this helps
+		- Limit Materials
+			Not sure if this helps
+
 		- Don't try to make a tool if you are already planning to make the same one in the future
 		- Don't try to make iron tools if you don't have a stone pickaxe
-			DOESN'T WORK
+			DOESN'T WORK: Won't try to make iron tools at all
 		- Don't use worse tools if you have better ones
 		- Don't try to make a tool if you are planning to make a worse version of the same tool later
 
 	'''
 	
+	# Depth check
 	'''def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
-		if depth > 50:
+		if depth > 400:
 			return True
 		return False
 	pyhop.add_check(heuristic)'''
-
-	# Checks to see if tool has already been made and prunes if it has
-	'''def heuristic2 (state, curr_task, tasks, plan, depth, calling_stack):
-		item = curr_task[0][9:] # This gets a substring without the 'produce_' part
-		if item in data['Tools'] and getattr(state, 'made_'+item)[ID]:
-			return True
-		return False
-	pyhop.add_check(heuristic2)'''
 
 	# Limits certain materials
 	'''def heuristic3 (state, curr_task, tasks, plan, depth, calling_stack):
@@ -283,7 +281,7 @@ if __name__ == '__main__':
 	with open(rules_filename) as f:
 		data = json.load(f)
 
-	state = set_up_state(data, 'agent', time=100) # allot time here
+	state = set_up_state(data, 'agent', time=40) # allot time here
 	goals = set_up_goals(data, 'agent')
 
 	declare_operators(data)
@@ -300,37 +298,37 @@ if __name__ == '__main__':
 
 	'''Required tests'''
 	
-	# TEST 1
+	# TEST 1; Time 300
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'plank', 1)], verbose=3)
 	'''pass'''
 
 	# RANDOM TEST
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'bench', 1), ('have_enough', 'agent', 'stick', 2), ('have_enough', 'agent', 'plank', 3)], verbose=3)
 	
-	# TEST 2
+	# TEST 2; Time 300
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'wooden_pickaxe', 1)], verbose=3)
 	'''pass'''
 
-	# TEST 3
+	# TEST 3; Time 300
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'furnace', 1)], verbose=3)
 	'''pass'''
 
-	# TEST 4
+	# TEST 4; Time 300
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1)], verbose=3)
 	'''pass'''
 
-	# TEST 5
+	# TEST 5; Time 0
 	# state.plank = {'agent': 1}
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'plank', 1)], verbose=3)
 	'''pass'''
 
-	# TEST 6
+	# TEST 6; Time 10
 	# state.plank = {'agent': 3}
 	# state.stick = {'agent': 2}
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'wooden_pickaxe', 1)], verbose=3)
 	'''pass'''
 
-	# TEST 7
+	# TEST 7; Time 40
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'stone_pickaxe', 1)], verbose=3)
 	'''pass'''
 
@@ -338,16 +336,17 @@ if __name__ == '__main__':
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'ingot', 3)], verbose=3)
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'ingot', 3)], verbose=3)
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'stick', 2), ('have_enough', 'agent', 'ingot', 3)], verbose=3)
-	pyhop.pyhop(state, [('have_enough', 'agent', 'bench', 1), ('have_enough', 'agent', 'stick', 2), ('have_enough', 'agent', 'ingot', 3)], verbose=3)
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'bench', 1), ('have_enough', 'agent', 'ingot', 3), ('have_enough', 'agent', 'stick', 2)], verbose=3)
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'bench', 1), ('have_enough', 'agent', 'stick', 2), ('have_enough', 'agent', 'ingot', 3)], verbose=3)
 
-	# TEST 8
+	# TEST 8; Time 100
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'iron_pickaxe', 1)], verbose=3)
-	'''Max recursion depth'''
+	'''Takes too Long'''
 
-	# TEST 9
+	# TEST 9; Time 175
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 10)], verbose=3)
-	'''Max recursion depth'''
+	'''Untested'''
 
-	# Test 10
+	# Test 10; Time 250
 	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
-	'''Max recursion depth'''
+	'''Untested'''
