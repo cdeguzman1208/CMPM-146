@@ -1,6 +1,6 @@
 David Amaya and Cromwell De Guzman
 
-heuristic ideas:
+Heuristic ideas:
 - Depth Check: Not sure if this helps
 - Limit Materials: Not sure if this helps
 - Don't try to make a tool if you are already planning to make the same one in the future
