@@ -72,7 +72,8 @@ class Individual_Grid(object):
         right = width - 1
         for y in range(height):
             for x in range(left, right):
-                pass
+                if random.random() < 0.5 and len(genome) > 0:
+                    genome[y][x] = random.choice(options)
         return genome
 
     # Create zero or more children from self and other
@@ -343,12 +344,61 @@ class Individual_DE(object):
 
 
 Individual = Individual_Grid
+# Individual = Individual_DE
 
 
 def generate_successors(population):
     results = []
     # STUDENT Design and implement this
     # Hint: Call generate_children() on some individuals and fill up results.
+
+    selection = random.randint(0, 1)
+
+    # elitist selection strategy
+    if selection == 0: 
+        print('elitist')
+        elitism_rate = 0.1  # Adjust this value based on your preferences
+        elite_count = int(elitism_rate * len(population))
+        elites = sorted(population, key=lambda x: x.fitness(), reverse=True)[:elite_count]
+
+        results = elites[:]  # Add elites to the new population
+
+        # Generate offspring for the rest of the population using elitist selection
+        while len(results) < len(population):
+            parent1 = random.choice(elites)
+            parent2 = random.choice(elites)
+            child = parent1.generate_children(parent2)[0]
+            results.extend([child])
+
+    # roulette wheel selection strategy 
+    else: 
+        print('roulette')
+        total_fitness = sum(individual.fitness() for individual in population)
+
+        # Select parents and generate children
+        while len(results) < len(population):
+            # Roulette wheel selection
+            rand = random.random() * total_fitness
+            cumulative_probability = 0
+            parent1 = None
+            parent2 = None
+            for individual in population:
+                cumulative_probability += individual.fitness()
+                if cumulative_probability >= rand:
+                    if parent1 is None:
+                        parent1 = individual
+                    if parent2 is None:
+                        parent2 = individual
+                        break
+            child = parent1.generate_children(parent2)[0]
+            results.extend([child])
+
+    # for i in range(len(population)):
+    #     for j in range(i + 1, len(population)):
+    #         parent1 = population[i]
+    #         parent2 = population[j]
+    #         children = parent1.generate_children(parent2)
+    #         results.extend(children)
     return results
 
 
@@ -391,7 +441,7 @@ def ga():
                             f.write("".join(row) + "\n")
                 generation += 1
                 # STUDENT Determine stopping condition
-                stop_condition = False
+                stop_condition = False if generation <= 10 else True
                 if stop_condition:
                     break
                 # STUDENT Also consider using FI-2POP as in the Sorenson & Pasquier paper
