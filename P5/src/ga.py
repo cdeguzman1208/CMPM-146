@@ -356,7 +356,7 @@ def generate_successors(population):
 
     # elitist selection strategy
     if selection == 0: 
-        print('elitist')
+        # print('elitist')
         elitism_rate = 0.1  # Adjust this value based on your preferences
         elite_count = int(elitism_rate * len(population))
         elites = sorted(population, key=lambda x: x.fitness(), reverse=True)[:elite_count]
@@ -372,7 +372,7 @@ def generate_successors(population):
 
     # roulette wheel selection strategy 
     else: 
-        print('roulette')
+        # print('roulette')
         total_fitness = sum(individual.fitness() for individual in population)
 
         # Select parents and generate children
@@ -393,12 +393,6 @@ def generate_successors(population):
             child = parent1.generate_children(parent2)[0]
             results.extend([child])
 
-    # for i in range(len(population)):
-    #     for j in range(i + 1, len(population)):
-    #         parent1 = population[i]
-    #         parent2 = population[j]
-    #         children = parent1.generate_children(parent2)
-    #         results.extend(children)
     return results
 
 
