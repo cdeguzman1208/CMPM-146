@@ -14,3 +14,9 @@ Cromwell De Guzman (cgdeguzm) and Beatrice Yu (besyu)
 - Switch the encoding to Individual_DE and explore its outputs; write down an explanation of its crossover and mutation functions, with a diagram if possible.
 
 - Improve the fitness function and mutation operator (and potentially crossover) in Individual_DE
+
+# SUMMARY
+
+- Pick 1 favorite level from either encoding
+
+- Play that level in the Unity player and make sure you can beat it

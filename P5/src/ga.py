@@ -78,6 +78,7 @@ class Individual_Grid(object):
     # Create zero or more children from self and other
     def generate_children(self, other):
         new_genome = copy.deepcopy(self.genome)
+        other_genome = copy.deepcopy(other.genome)
         # Leaving first and last columns alone...
         # do crossover with other
         left = 1
@@ -86,7 +87,8 @@ class Individual_Grid(object):
             for x in range(left, right):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
-                pass
+                if random.randint(1, 100) < 51:
+                    new_genome[y][x] = other_genome[y][x]
         # do mutation; note we're returning a one-element tuple here
         return (Individual_Grid(new_genome),)
 

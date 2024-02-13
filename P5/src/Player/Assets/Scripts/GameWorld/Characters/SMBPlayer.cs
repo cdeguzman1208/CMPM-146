@@ -41,6 +41,8 @@ public class SMBPlayer : SMBCharacter {
 
 		_particleSystem = GetComponent<SMBParticleSystem> ();
 		base.Awake ();
+
+		Application.targetFrameRate = 60;
 	}
 
 	void Start() {
