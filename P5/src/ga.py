@@ -72,7 +72,7 @@ class Individual_Grid(object):
         right = width - 1
         for y in range(height):
             for x in range(left, right):
-                if random.random() < 0.5 and len(genome) > 0:
+                if random.random() < 0.1 and len(genome) > 0:
                     genome[y][x] = random.choice(options)
         return genome
 
@@ -352,7 +352,8 @@ def generate_successors(population):
     # STUDENT Design and implement this
     # Hint: Call generate_children() on some individuals and fill up results.
 
-    selection = random.randint(0, 1)
+    # selection = random.randint(0, 1)
+    selection = 0
 
     # elitist selection strategy
     if selection == 0: 
@@ -373,25 +374,32 @@ def generate_successors(population):
     # roulette wheel selection strategy 
     else: 
         # print('roulette')
-        total_fitness = sum(individual.fitness() for individual in population)
+        # total_fitness = sum(individual.fitness() for individual in population)
 
-        # Select parents and generate children
-        while len(results) < len(population):
-            # Roulette wheel selection
-            rand = random.random() * total_fitness
-            cumulative_probability = 0
-            parent1 = None
-            parent2 = None
-            for individual in population:
-                cumulative_probability += individual.fitness()
-                if cumulative_probability >= rand:
-                    if parent1 is None:
-                        parent1 = individual
-                    if parent2 is None:
-                        parent2 = individual
-                        break
-            child = parent1.generate_children(parent2)[0]
-            results.extend([child])
+        # # Select parents and generate children
+        # while len(results) < len(population):
+        #     # Roulette wheel selection
+        #     rand = random.random() * total_fitness
+        #     cumulative_probability = 0
+        #     parent1 = None
+        #     parent2 = None
+        #     for individual in population:
+        #         cumulative_probability += individual.fitness()
+        #         if cumulative_probability >= rand:
+        #             if parent1 is None:
+        #                 parent1 = individual
+        #             elif parent2 is None:
+        #                 parent2 = individual
+        #                 break
+        #     child = parent1.generate_children(parent2)[0]
+        #     results.extend([child])
+
+        total_fitness = sum(gen._fitness for gen in population)
+        probabilities = [gen._fitness / total_fitness for gen in population]
+
+        for _ in range(len(population)):
+            selected_gen = random.choices(population, probabilities)[0]
+            results.append(selected_gen)
 
     return results
 
