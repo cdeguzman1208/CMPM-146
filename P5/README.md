@@ -5,7 +5,7 @@ Cromwell De Guzman (cgdeguzm) and Beatrice Yu (besyu)
 
 - Implement crossover in generate_children for the Grid encoding
 
- - We used uniform crossover.
+    - We used uniform crossover.
 
 - Implement mutation in mutate for the Grid encoding
 
