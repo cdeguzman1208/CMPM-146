@@ -23,6 +23,9 @@ Cromwell De Guzman (cgdeguzm) and Beatrice Yu (besyu)
 
 - Improve the fitness function and mutation operator (and potentially crossover) in Individual_DE
 
+    - We changed some of the values in the coefficients dict under calculate_fitness. Namely, lowering the emptyPercentage and increasing the solvability parameters.
+    - We also improved a few lines in the mutate function. Improvements on de_type 0_hole to allow for smaller varying sizes of holes in the ground to help decrease the chances of Mario falling off the map, while still maintaining the integrity of having the obstacle as a potential challenge.
+
 # SUMMARY
 
 - Pick 1 favorite level from either encoding
