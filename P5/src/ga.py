@@ -398,8 +398,12 @@ def generate_successors(population):
         while len(results) < len(population):
             parent1 = random.choice(elites)
             parent2 = random.choice(elites)
-            child1 = parent1.generate_children(parent2)[0]
-            child2 = parent2.generate_children(parent1)[0]
+
+            if Individual == Individual_Grid:
+                child1 = parent1.generate_children(parent2)[0]
+                child2 = parent2.generate_children(parent1)[0]
+            else: 
+                child1, child2 = parent1.generate_children(parent2)
             results.extend([child1])
             results.extend([child2])
 
@@ -424,8 +428,11 @@ def generate_successors(population):
                         parent2 = individual
                         break
             if parent1 != None and parent2 != None: 
-                child1 = parent1.generate_children(parent2)[0]
-                child2 = parent2.generate_children(parent1)[0]
+                if Individual == Individual_Grid: 
+                    child1 = parent1.generate_children(parent2)[0]
+                    child2 = parent2.generate_children(parent1)[0]
+                else: 
+                    child1, child2 = parent1.generate_children(parent2)
                 results.extend([child1])
                 results.extend([child2])
 
