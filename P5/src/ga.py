@@ -187,9 +187,9 @@ class Individual_DE(object):
             meaningfulJumpVariance=0.5,
             negativeSpace=0.6,
             pathPercentage=0.5,
-            emptyPercentage=0.6,
+            emptyPercentage= -0.7,
             linearity=-0.5,
-            solvability=2.0
+            solvability=6.0
         )
         penalties = 0
         # STUDENT For example, too many stairs are unaesthetic.  Let's penalize that
@@ -250,11 +250,18 @@ class Individual_DE(object):
                     h = offset_by_upto(h, 2, min=2, max=height - 4)
                 new_de = (x, de_type, h)
             elif de_type == "0_hole":
+                # Made some improvements here
                 w = de[2]
-                if choice < 0.5:
+                # If true set the width of the hole to be of size 2.
+                if choice < 0.33:
                     x = offset_by_upto(x, width / 8, min=1, max=width - 2)
+                    w = 2
+                # If true set the width of the hole to be of size 1
+                elif choice < 0.66:
+                    x = offset_by_upto(x, width / 4, min=1, max=width - 2)
+                    w = 1
                 else:
-                    w = offset_by_upto(w, 4, min=1, max=width - 2)
+                    w = offset_by_upto(w, 2, min=1, max=2)
                 new_de = (x, de_type, w)
             elif de_type == "6_stairs":
                 h = de[2]
@@ -366,8 +373,8 @@ class Individual_DE(object):
         return Individual_DE(g)
 
 
-Individual = Individual_Grid
-# Individual = Individual_DE
+# Individual = Individual_Grid
+Individual = Individual_DE
 
 
 def generate_successors(population):
