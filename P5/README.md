@@ -28,10 +28,20 @@ Cromwell De Guzman (cgdeguzm) and Beatrice Yu (besyu)
 
 # SUMMARY
 
-- Pick 1 favorite level from either encoding
+- Something about each of your two favorite levels
 
-    - Our favorite level was...
+1. Encoding 1 Level
+Generation: 10
+Max fitness: 3.5960411796196556
+Average generation time: 29.629750227928163
+Net time: 296.2975022792816
 
-- Play that level in the Unity player and make sure you can beat it
+Although the generation is somewhat random and chaotic, we liked that the level is still winnable. All you need to do is make your way to the top of the map and jump over everything to reach the end.
 
-    - Yes, the level is beatable.
+2. Encoding 2 Level
+Generation: 1
+Max fitness: 5.732605766243234
+Average generation time: 20.053194046020508
+Net time: 20.053194046020508
+
+This level contains zero pitfalls and only one enemy. We liked this level because it's almost impossible to die unless you perchance throw yourself at the one and only goomba.
