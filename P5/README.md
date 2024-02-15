@@ -14,11 +14,12 @@ Cromwell De Guzman (cgdeguzm) and Beatrice Yu (besyu)
     - The function, mutate, applies mutations to the genome. It changes the content of the genome based on certain conditions and probabilities, such as there being a higher chance of selecting an empty space. Additionally, floating walls and pipes may be replaced. 
     - We chose to have a 10% chance of mutation happening. This makes it so that mutation does not occur too frequently. 
 
-# ENCODING 2
+# ENCODING 2 - Design Element Encoding
 
 - Switch the encoding to Individual_DE and explore its outputs
 
-    - (DELETE THIS: write down an explanation of its crossover and mutation functions)
+    - The crossover function is responsible for creating children from two parent genomes using variable point crossover. It selects random indices in each parent genome and divides each genome into two sections using a random index. It then returns two children, one with the front section of parent a and the back section of parent b and the other with the front section of parent b and the back section of parent a. 
+    - The mutate function is responsible for mutating an individual's genome. It randomly selects a design element from the genome and modifies it based on certain probabilities. 
 
 - Improve the fitness function and mutation operator (and potentially crossover) in Individual_DE
 
