@@ -402,10 +402,13 @@ def generate_successors(population):
             if Individual == Individual_Grid:
                 child1 = parent1.generate_children(parent2)[0]
                 child2 = parent2.generate_children(parent1)[0]
+                results.extend([child1])
+                results.extend([child2])
             else: 
-                child1, child2 = parent1.generate_children(parent2)
-            results.extend([child1])
-            results.extend([child2])
+                if len(parent1.genome) > 0 and len(parent2.genome) > 0:
+                    child1, child2 = parent1.generate_children(parent2)
+                    results.extend([child1])
+                    results.extend([child2])
 
     # roulette wheel selection strategy 
     else: 
@@ -431,10 +434,13 @@ def generate_successors(population):
                 if Individual == Individual_Grid: 
                     child1 = parent1.generate_children(parent2)[0]
                     child2 = parent2.generate_children(parent1)[0]
+                    results.extend([child1])
+                    results.extend([child2])
                 else: 
-                    child1, child2 = parent1.generate_children(parent2)
-                results.extend([child1])
-                results.extend([child2])
+                    if len(parent1.genome) > 0 and len(parent2.genome) > 0:
+                        child1, child2 = parent1.generate_children(parent2)
+                        results.extend([child1])
+                        results.extend([child2])
 
     return results
 
