@@ -70,10 +70,26 @@ class Individual_Grid(object):
 
         left = 1
         right = width - 1
+        new_genome = copy.deepcopy(self.genome)
         for y in range(height):
             for x in range(left, right):
-                if random.random() < 0.1 and len(genome) > 0:
-                    genome[y][x] = random.choice(options)
+                if random.random() < 0.1 and y > 1:
+                    # wall 'X'
+                    if new_genome[y][x] == 'X': 
+                        if new_genome[y-1][x] != 'X':
+                            genome[y][x] = random.choices(['B', '-'], weights=[1, 3], k=1)[0]
+                    # pipe segment/pipe top '|', 'T'
+                    elif new_genome[y][x] == '|' or new_genome[y][x] == 'T': 
+                        if new_genome[y-1][x] != '|' and y != height and (new_genome[y+1][x] != '|' or new_genome[y+1][x] != 'T'):
+                            # increased weight for coin block '?'
+                            genome[y][x] = random.choices(['M', '?'], weights=[1, 3], k=1)[0]
+                    elif new_genome[y][x] == '-':
+                        # reduced number of random calls
+                        choice = random.random()
+                        if choice <= 0.3:
+                            genome[y][x] = '?'
+                        elif choice >= 0.6:
+                            genome[y][x] = 'o'
         return genome
 
     # Create zero or more children from self and other
@@ -88,9 +104,16 @@ class Individual_Grid(object):
             for x in range(left, right):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
-                if random.randint(1, 100) < 51:
-                    new_genome[y][x] = other_genome[y][x]
+                if random.random() < 0.5:
+                    new_genome[y][x] = other_genome[y][x] if other_genome[y][x] != 'T' and other_genome[y][x] != '|' else new_genome[y][x]
+        
         # do mutation; note we're returning a one-element tuple here
+        mutation_rate = 0.1 
+        for y in range(height): 
+            for x in range(left, right): 
+                if random.random() < mutation_rate: 
+                    new_genome[y][x] = random.choice(options)
+
         return (Individual_Grid(new_genome),)
 
     # Turn the genome into a level string (easy for this genome)
@@ -368,38 +391,36 @@ def generate_successors(population):
         while len(results) < len(population):
             parent1 = random.choice(elites)
             parent2 = random.choice(elites)
-            child = parent1.generate_children(parent2)[0]
-            results.extend([child])
+            child1 = parent1.generate_children(parent2)[0]
+            child2 = parent2.generate_children(parent1)[0]
+            results.extend([child1])
+            results.extend([child2])
 
     # roulette wheel selection strategy 
     else: 
         # print('roulette')
-        # total_fitness = sum(individual.fitness() for individual in population)
+        total_fitness = sum(individual.fitness() for individual in population)
 
-        # # Select parents and generate children
-        # while len(results) < len(population):
-        #     # Roulette wheel selection
-        #     rand = random.random() * total_fitness
-        #     cumulative_probability = 0
-        #     parent1 = None
-        #     parent2 = None
-        #     for individual in population:
-        #         cumulative_probability += individual.fitness()
-        #         if cumulative_probability >= rand:
-        #             if parent1 is None:
-        #                 parent1 = individual
-        #             elif parent2 is None:
-        #                 parent2 = individual
-        #                 break
-        #     child = parent1.generate_children(parent2)[0]
-        #     results.extend([child])
-
-        total_fitness = sum(gen._fitness for gen in population)
-        probabilities = [gen._fitness / total_fitness for gen in population]
-
-        for _ in range(len(population)):
-            selected_gen = random.choices(population, probabilities)[0]
-            results.append(selected_gen)
+        # Select parents and generate children
+        while len(results) < len(population):
+            # Roulette wheel selection
+            rand = random.random() * total_fitness
+            cumulative_probability = 0
+            parent1 = None
+            parent2 = None
+            for individual in population:
+                cumulative_probability += individual.fitness()
+                if cumulative_probability >= rand:
+                    if parent1 is None:
+                        parent1 = individual
+                    elif parent2 is None:
+                        parent2 = individual
+                        break
+            if parent1 != None and parent2 != None: 
+                child1 = parent1.generate_children(parent2)[0]
+                child2 = parent2.generate_children(parent1)[0]
+                results.extend([child1])
+                results.extend([child2])
 
     return results
 
