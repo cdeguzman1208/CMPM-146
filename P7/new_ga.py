@@ -4,6 +4,30 @@ import os
 import random
 import time
 import math
+import json
+
+
+DANCE_DIRECTORY = 'output_videos_jsons\\insane'
+IDEAL_POSE_DIRECTORY = 'ideal_poses\\jsons'
+
+'''
+Representing the genome
+'''
+def Load_Poses(dir):
+    dance_poses = []
+
+    for filename in os.listdir(dir):
+        f = os.path.join(dir, filename)
+        # print(f)
+
+        with open(f, 'r') as json_file:
+            pose_data = json.load(json_file)
+
+        # print(pose_data)
+        dance_poses.append(pose_data)
+
+    return dance_poses
+
 
 '''
 THIS CODE WAS TAKEN AND MODIFIED FROM ASSIGNMENT P5 OF CMPM 146: GAME AI, SPRING 2024
@@ -57,6 +81,10 @@ class Individual_Dance(object):
     '''
     def get_dance(self):
         return self.genome
+    
+    # @classmethod
+    # def base_individual():
+    #     return Individual_Dance(Load_Dance_Genome())
     
 '''
 The following is a copy paste of the selection algorithms used in my P5
@@ -229,7 +257,28 @@ The following is a partial copy of P5's main function
 '''
 
 if __name__ == "__main__":
-    final_gen = sorted(ga(), key=Individual.fitness, reverse=True)
-    best = final_gen[0]
-    print("Best fitness: " + str(best.fitness()))
-    now = time.strftime("%m_%d_%H_%M_%S")
+    # Load the base dance from files
+    base_dance = Load_Poses(DANCE_DIRECTORY)
+
+    test_individual = Individual_Dance(base_dance)
+    test_genome = test_individual.get_dance()
+
+    for i in range(len(test_genome)):
+        print("frame ", i)
+        print(test_genome[i])
+
+    # ideal_poses = Load_Poses(IDEAL_POSE_DIRECTORY)
+    # for i in range(len(ideal_poses)):
+    #     print("pose ", i+1)
+    #     print(ideal_poses[i])
+
+
+    '''
+    This part is supposed to start the generation
+    '''
+    # final_gen = sorted(ga(), key=Individual.fitness, reverse=True)
+    # best = final_gen[0]
+    # print("Best fitness: " + str(best.fitness()))
+    # now = time.strftime("%m_%d_%H_%M_%S")
+
+    print("Done")

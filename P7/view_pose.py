@@ -15,6 +15,8 @@ connections = [
     (11, 24), (11, 22), (22, 23)            # Right Foot
 ]
 
+
+
 # # Load OpenPose JSON output
 # with open(".\\output_videos_jsons\\insane\\insane_000000000800_keypoints.json", "r") as json_file:
 #     data = json.load(json_file)
@@ -65,8 +67,14 @@ for frame in range(100, 800, 50):
             plt.plot([x_coords[connection[0]], x_coords[connection[1]]],
                     [y_coords[connection[0]], y_coords[connection[1]]], c="blue")  # Connect keypoints
 
+    
+    
+    # plt.axis("equal")
+    plt.ylim(0,0.85)
+    plt.xlim(0,2)
     plt.gca().invert_yaxis()  # Invert y-axis to match image coordinates
-    plt.axis("equal")
+    
+    
 
     # Save plot as png
     fname = ".\\output_plot\\insane\\frame_" + str(frame) + ".png"
