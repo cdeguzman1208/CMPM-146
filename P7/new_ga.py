@@ -10,6 +10,7 @@ import json
 DANCE_DIRECTORY = 'output_videos_jsons\\insane'
 IDEAL_POSE_DIRECTORY = 'ideal_poses\\jsons'
 
+
 '''
 Representing the genome
 '''
@@ -43,7 +44,30 @@ class Individual_Dance(object):
     '''CALCULATES THE FITNESS OF A DANCE'''
     def calculate_fitness(self):
         # CALCULATE THE FITNESS BY CHECKING SIMILARITY TO "DESIRABLE" POSE DATA
+        points = 0
+        
+        for gpose_frame in self.genome:
+            for ipose in ideal_poses:
+                # A pose is a dictionary; important keypoints are 0-14
 
+                keypoints_self = gpose_frame['people'][0]["pose_keypoints_2d"]
+                x_coords_self = keypoints_self[0::3]
+                y_coords_self = keypoints_self[1::3]
+                # c_vals_self = keypoints_self[2::3]
+
+                keypoints_ideal = ipose['people'][0]["pose_keypoints_2d"]
+                x_coords_ideal = keypoints_ideal[0::3]
+                y_coords_ideal = keypoints_ideal[1::3]
+                # c_vals_ideal = keypoints_ideal[2::3]
+                for i in range(15):
+                    x1 = x_coords_self[i]
+                    y1 = y_coords_self[i]
+                    x2 = x_coords_ideal[i]
+                    y2 = y_coords_ideal[i]
+                    
+                    points += 1 - math.dist((x1,y1), (x2,y2))
+   
+        self._fitness = points
         pass
 
     '''Return the cached fitness value or calculate it as needed.'''
@@ -259,18 +283,21 @@ The following is a partial copy of P5's main function
 if __name__ == "__main__":
     # Load the base dance from files
     base_dance = Load_Poses(DANCE_DIRECTORY)
+    ideal_poses = Load_Poses(IDEAL_POSE_DIRECTORY)
 
     test_individual = Individual_Dance(base_dance)
     test_genome = test_individual.get_dance()
 
-    for i in range(len(test_genome)):
-        print("frame ", i)
-        print(test_genome[i])
+    # for i in range(len(test_genome)):
+    #     print("frame ", i)
+    #     print(test_genome[i])
 
-    # ideal_poses = Load_Poses(IDEAL_POSE_DIRECTORY)
+    
     # for i in range(len(ideal_poses)):
     #     print("pose ", i+1)
     #     print(ideal_poses[i])
+
+    print("Test individual's fitness: ", test_individual.fitness())
 
 
     '''
