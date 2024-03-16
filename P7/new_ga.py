@@ -10,6 +10,9 @@ import json
 DANCE_DIRECTORY = 'output_videos_jsons\\insane'
 IDEAL_POSE_DIRECTORY = 'ideal_poses\\jsons'
 
+face = [0, 15, 16, 17, 18]
+r_foot = [11, 22, 23, 24]
+l_foot = [14, 19, 20, 21]
 
 '''
 Representing the genome
@@ -68,7 +71,6 @@ class Individual_Dance(object):
                     points += 1 - math.dist((x1,y1), (x2,y2))
    
         self._fitness = points
-        pass
 
     '''Return the cached fitness value or calculate it as needed.'''
     def fitness(self):
@@ -81,6 +83,16 @@ class Individual_Dance(object):
         # MUTATE BY SHIFTING KEYPOINTS TO NEW LOCATIONS
         # DO THIS RANDOMLY OR IN A STRUCTURED WAY (arms & legs shift by a lot, torso points move by a little bit, etc.)
         # READ DOCUMENTATION TO SEE WHICH KEYPOINT CORRESPONDS TO WHICH BODY PART
+        for gpose_frame in self.genome:
+            keypoints_self = gpose_frame['people'][0]["pose_keypoints_2d"]
+            x_coords_self = keypoints_self[0::3]
+            y_coords_self = keypoints_self[1::3]
+            c_vals_self = keypoints_self[2::3]
+
+            # Change the pose somehow
+            
+
+
 
         pass
 
