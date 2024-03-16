@@ -13,6 +13,7 @@ IDEAL_POSE_DIRECTORY = 'ideal_poses\\jsons'
 face = [0, 15, 16, 17, 18]
 r_foot = [11, 22, 23, 24]
 l_foot = [14, 19, 20, 21]
+hips = [8, 9, 12]
 
 '''
 Representing the genome
@@ -83,18 +84,45 @@ class Individual_Dance(object):
         # MUTATE BY SHIFTING KEYPOINTS TO NEW LOCATIONS
         # DO THIS RANDOMLY OR IN A STRUCTURED WAY (arms & legs shift by a lot, torso points move by a little bit, etc.)
         # READ DOCUMENTATION TO SEE WHICH KEYPOINT CORRESPONDS TO WHICH BODY PART
-        for gpose_frame in self.genome:
+        for gpose_frame in genome:
             keypoints_self = gpose_frame['people'][0]["pose_keypoints_2d"]
-            x_coords_self = keypoints_self[0::3]
-            y_coords_self = keypoints_self[1::3]
-            c_vals_self = keypoints_self[2::3]
+            x_coords = keypoints_self[0::3]
+            y_coords = keypoints_self[1::3]
+            c_vals = keypoints_self[2::3]
 
             # Change the pose somehow
-            
+            mutation_offset = 0.05
+            mutated_points = []
+            for i in range(25):
+                if (c_vals[i] != 0 and i not in mutated_points):
+                    x_offset = (random.random() * 2 * mutation_offset) - mutation_offset
+                    y_offset = (random.random() * 2 * mutation_offset) - mutation_offset
 
-
-
-        pass
+                    if (i in face):
+                        for j in face:
+                            x_coords[j] += x_offset
+                            y_coords[j] += y_offset
+                            mutated_points.append(j)
+                    elif (i in r_foot):
+                        for j in r_foot:
+                            x_coords[j] += x_offset
+                            y_coords[j] += y_offset
+                            mutated_points.append(j)
+                    elif (i in l_foot):
+                        for j in l_foot:
+                            x_coords[j] += x_offset
+                            y_coords[j] += y_offset
+                            mutated_points.append(j)
+                    elif (i in hips):
+                        for j in hips:
+                            x_coords[j] += x_offset
+                            y_coords[j] += y_offset
+                            mutated_points.append(j)
+                    else:
+                        x_coords[i] += x_offset
+                        y_coords[i] += y_offset
+                        mutated_points.append(j)
+        return genome
 
     '''COPYING CROSSOVER METHOD FROM P5'''
     def generate_children(self, other):
@@ -107,7 +135,14 @@ class Individual_Dance(object):
         a_part = self.genome[pa:] if len(self.genome) > 0 else []
         gb = b_part + a_part
         # do mutation
-        return Individual_Dance(self.mutate(ga)), Individual_Dance(self.mutate(gb))
+        # return Individual_Dance(self.mutate(ga)), Individual_Dance(self.mutate(gb))
+        '''
+        I don't understand what the original does
+        '''
+        # length 2 tuple of 2 new individuals
+        return [Individual_Dance(self.mutate(ga)), Individual_Dance(self.mutate(gb))]
+    
+        return Individual_Dance(Individual_Dance(ga).mutate(gb))
 
     
     '''
@@ -138,7 +173,7 @@ def generate_successors(population):
     fits = [1.1**individual.fitness() for individual in population]
     total_fit = sum(fits)
 
-    for i in range(480):
+    for i in range(480/2):
         # roulette selecting parent 1
         parent1 = None
         selector = random.uniform(0, total_fit)
@@ -161,8 +196,9 @@ def generate_successors(population):
                 parent2 = individual
                 break
         
-        new = parent1.generate_children(parent2)[0]
-        results.append(new)
+        child_1, child_2 = parent1.generate_children(parent2)
+        results.append(child_1)
+        results.append(child_2)
     
 
     return results
@@ -298,6 +334,7 @@ if __name__ == "__main__":
     ideal_poses = Load_Poses(IDEAL_POSE_DIRECTORY)
 
     test_individual = Individual_Dance(base_dance)
+    test_individual_2 = Individual_Dance(base_dance)
     test_genome = test_individual.get_dance()
 
     # for i in range(len(test_genome)):
@@ -309,7 +346,13 @@ if __name__ == "__main__":
     #     print("pose ", i+1)
     #     print(ideal_poses[i])
 
-    print("Test individual's fitness: ", test_individual.fitness())
+    print("Test individual fitness: ", test_individual.fitness())
+    print("Test individual 2 fitness: ", test_individual.fitness())
+
+    child_1, child_2 = test_individual.generate_children(test_individual_2)
+
+    print("child 1 fitness: ", child_1.fitness())
+    print("child 2 fitness: ", child_2.fitness())
 
 
     '''
